@@ -30,49 +30,72 @@
 //#endregion
 console.clear();
 function convertToRoman(num) {
-    // 0 < num <= 3999
-    const romanianNotation = new Map([
-        [1, 'I'],
-        [2, 'II'],
-        [3, 'III'],
-        [4, 'IV'],
-        [5, 'V'],
-        [6, 'VI'],
-        [7, 'VII'],
-        [8, 'VIII'],
-        [9, 'IX'],
-        [10, 'X'],
-        [50, 'L'],
-        [100, 'C'],
-        [500, 'D'],
-        [1000, 'M'],
-    ]);
+    // 0 < num <= 9999
+    //convert input
     const magnitudes = num
         .toString()
         .split('')
         .map(v => parseInt(v))
         .reduce((acc, value, index, arr) => acc.concat(value * 10 ** (arr.length - index - 1)), [])
         .reverse();
-    // sum operations
-    var output = magnitudes
-        .reduce(function (romaNumbers, magnitud) {
-        let _accOutput = '';
-        let _counter = 0;
-        while (_counter < magnitud) {
-            let found = [...romanianNotation.keys()].reverse().find(function (v) {
-                return v <= magnitud - _counter;
-            }) || 0;
-            _counter += found;
-            _accOutput += romanianNotation.get(found);
+    const romanianNotation = new Map([
+        [1, 'I'],
+        [5, 'V'],
+        [10, 'X'],
+        [50, 'L'],
+        [100, 'C'],
+        [500, 'D'],
+        [1000, 'M'],
+    ]);
+    const romanianNotationFlipped = new Map([
+        ['I', 1],
+        ['V', 5],
+        ['X', 10],
+        ['L', 50],
+        ['C', 100],
+        ['D', 500],
+        ['M', 1000],
+    ]);
+    const miniumDif = (suma = true, magnitud, _counter = 0) => {
+        var _a;
+        let archivo = [...romanianNotation.entries()].filter(v => suma ? v[0] <= magnitud : v[0] >= magnitud);
+        return ((_a = archivo
+            .map(function (actual) {
+            let key = actual[1];
+            let dif = Math.abs(actual[0] - magnitud + _counter);
+            return [key, dif];
+        })
+            .sort((a, b) => {
+            return a[1] - b[1];
+        })
+            .shift()) !== null && _a !== void 0 ? _a : [1000, 'M']);
+    };
+    const getZeros = num => Math.pow(10, Math.trunc(Math.log10(num)));
+    const isRestable = (difWithMinus, difWithPlus) => {
+        let difWithMinusZeros = difWithMinus[1] / getZeros(difWithMinus[1]);
+        return difWithMinusZeros !== 2 && difWithMinus[1] < difWithPlus[1];
+    };
+    return magnitudes
+        .reduce(function (output, magnitud) {
+        var _counter = 0;
+        var _accOutput = '';
+        while (_counter != magnitud) {
+            let difWithMinus = miniumDif(false, magnitud, _counter);
+            let difWithPlus = miniumDif(true, magnitud, _counter);
+            if (isRestable(difWithMinus, difWithPlus)) {
+                _accOutput +=
+                    romanianNotation.get(difWithMinus[1]) + difWithMinus[0];
+                _counter += magnitud;
+            }
+            else {
+                _accOutput += difWithPlus[0];
+                _counter += romanianNotationFlipped.get(difWithPlus[0]);
+            }
         }
-        return romaNumbers.concat(_accOutput);
+        return output.concat(_accOutput);
     }, [])
         .reverse()
         .join('');
-    // minus operations
-    return output;
 }
-// 666: DCLXVI
-let output = convertToRoman(97);
-console.log(output);
+console.log(convertToRoman(4));
 //# sourceMappingURL=romanian.js.map
